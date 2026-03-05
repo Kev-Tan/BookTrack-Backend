@@ -178,6 +178,26 @@ async def embed_one(book_id: str):
     supabase.table("books").update({"embedding": vec}).eq("google_id", book_id).execute()
     return {"ok": True, "google_id": book_id, "dims": len(vec)}
 
+
+@app.get("/summarize/{book}")
+def summarize_book(book: str) -> str: 
+    config = GenerateContentConfig(
+        temperature=0.2,
+        system_instruction="Return a string",
+        # response_mime_type="application/json",
+        response_schema=str,
+    )
+    
+    prompt = f"Please give a short but dense summary of what happens in {book} rather than a brief synopsis. Format it similar to a wikipedia plot summary"
+    response = genai_client.models.generate_content(
+            model='gemini-2.5-flash', 
+            contents=[prompt],
+            config=config,
+        )
+    
+    return response.text
+    
+
 # @app.get("/supabase")
 # async def get_supabase():
 #     res = supabase.table("books").select("title").execute()
